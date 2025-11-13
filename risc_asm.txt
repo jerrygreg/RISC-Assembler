@@ -4,4 +4,4 @@ add r0, r1, r2
 or r0, r1, r2
 BRA 0xAaA
 lui r15, -100 # COMMENTS
-li r15, -100 # this is crazy!!
+li r15, 0b1000
