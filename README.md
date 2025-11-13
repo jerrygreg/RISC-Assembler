@@ -12,7 +12,7 @@ Make sure you have python downloaded. If you do not, you can go to `Anaconda Nav
 ## How to use?
 First, you should clone this repo into a location that is close to where you are working on the final project. 
 ```
-git clone <this repo>
+git clone https://github.com/jerrygreg/RISC-Assembler.git
 cd RISC-Assembler
 python risc_assembler.py --help
 ```
