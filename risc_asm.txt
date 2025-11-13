@@ -1,7 +1,8 @@
-add r0, r1, r2
+lui r15, -100 #Negative immediate!
+li r2, 0b1000 #Binary immediate!
+add r1, r2, r0
 
-# Blank!
-or r0, r1, r2
-BRA 0xAaA
-lui r15, -100 # COMMENTS
-li r15, 0b1000
+# Comment! ^^Blank space!!!
+or r1, r1, r2
+neg r1, r2
+BRA 0xAaA #HEX!

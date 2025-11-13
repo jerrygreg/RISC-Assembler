@@ -1,3 +1,5 @@
+from os import close
+
 from header import *
 import sys
 import argparse
@@ -129,7 +131,7 @@ def read_instr():
     #todo
     return "instr"
 
-def write_instr(p_instr: Instruction_t, writeable_file, hex = False):
+def write_instr(p_instr: Instruction_t, writeable_file, hex = False, concat_str = "_"):
     convert = dectobin
     if hex: convert = dectohex
 
@@ -139,25 +141,25 @@ def write_instr(p_instr: Instruction_t, writeable_file, hex = False):
         rd_bin = convert(p_instr.rd,4)
         rs1_bin = convert(p_instr.rs1,4)
         rs2_bin = convert(p_instr.rs2,4)
-        writeable_file.write(opcode_bin + "_" + rd_bin + "_" + rs1_bin + "_" + rs2_bin + "\n")
+        writeable_file.write(concat_str.join([opcode_bin, rd_bin, rs1_bin, rs2_bin]) + "\n")
 
     elif p_instr.type == INSTR_TYPE.STORE:
         # write store
         rd_bin = convert(p_instr.rd,4)
         imm8_bin = convert(p_instr.imm8,8, signext = True)
-        writeable_file.write(opcode_bin + "_" + rd_bin + "_" + imm8_bin + "\n")
+        writeable_file.write(concat_str.join([opcode_bin, rd_bin, imm8_bin]) + "\n")
 
     elif p_instr.type == INSTR_TYPE.IMM:
         # write imm
         imm12_bin = convert(p_instr.imm12, 12, signext = True)
-        writeable_file.write(opcode_bin + "_" + imm12_bin + "\n")
+        writeable_file.write(concat_str.join([opcode_bin, imm12_bin]) + "\n")
 
     elif p_instr.type == INSTR_TYPE.TWOREG:
         # write tworeg
         rd_bin = convert(p_instr.rd, 4)
         rs1_bin = convert(p_instr.rs1, 4)
         ex_bin = convert(p_instr.ex, 4)
-        writeable_file.write(opcode_bin + "_" + rd_bin + "_" + rs1_bin + "\n")
+        writeable_file.write(concat_str.join([opcode_bin, rd_bin, rs1_bin, ex_bin]) + "\n")
 
 # Main function
 if __name__ == "__main__":
@@ -167,31 +169,42 @@ if __name__ == "__main__":
     # Add arguments
     parser.add_argument("file_path", type=str, help="The path to a text file with the risc assembly.")
     parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug prints.")
+    parser.add_argument("-nu", "--no-underscore", action="store_true", help="Turns off the underscore spacers in output files.")
+    parser.add_argument("-bf", "--binf", type=str, default="outbin.txt", help="Specifies the file to output the binary machine code to.")
+    parser.add_argument("-hf", "--hexf", type=str, default="outhex.txt", help="Specifies the file to output the hex machine code to.")
     args = parser.parse_args()
-
 
     #debug
     print(f"Running with arguments:",f"{args}"[9:])
     debug_on = args.debug
     file_path = args.file_path
 
+    if (args.no_underscore):
+        concat_str = ""
+    else:
+        concat_str = "_"
+
+    outfile_bin = open(args.binf, "w")
+    outfile_hex = open(args.hexf, "w")
+
     with open(file_path, "r") as infile:
-        with open("outbin.txt", "w") as outfile_bin:
-            with open("outhex.txt", "w") as outfile_hex:
-                line_num: int = 1
-                for instr in infile:
-                    # Process instruction
-                    p_instr: Instruction_t = process_instr(instr, line_num, debug=debug_on)
+        line_num: int = 1
+        for instr in infile:
+            # Process instruction
+            p_instr: Instruction_t = process_instr(instr, line_num, debug=debug_on)
 
-                    # Write instruction
-                    if p_instr.type != INSTR_TYPE.NONE:
-                        write_instr(p_instr, outfile_bin, False)
-                        write_instr(p_instr, outfile_hex, True)
-                    # else:
-                    #     outfile_bin.write("nothing\n")
-                    #     outfile_hex.write("nothing\n")
+            # Write instruction
+            if p_instr.type != INSTR_TYPE.NONE:
+                write_instr(p_instr, outfile_bin, False, concat_str = concat_str)
+                write_instr(p_instr, outfile_hex, True, concat_str = concat_str)
+            # else:
+            #     outfile_bin.write("nothing\n")
+            #     outfile_hex.write("nothing\n")
 
-                    line_num += 1
+            line_num += 1
+
+    outfile_bin.close()
+    outfile_hex.close()
 
     print("This assembler has completed running!")
     print("Please make sure you double check the machine code. \nThis program was make in one day, it could have bugs.")

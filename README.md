@@ -27,9 +27,10 @@ This will output the assembled code in two forms. The binary machine code in `ou
 ## Calling
 When you call this script, you must provide a file to assemble.
 ```
-python risc_assembler.py <risc_asm-file>
+python risc_assembler.py <risc_asm-file> [optional-flags]
 ```
 There are some optional flags you may also pass.
+- `--help`: Print the command options to the terminal
 - `--debug`: Provides debug prints to the console when you call the script. Tells you information such as how the script is interpreting each line.
 
 ## Instruction Convention
