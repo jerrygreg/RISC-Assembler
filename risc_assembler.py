@@ -86,10 +86,15 @@ def process_instr(instr: str, line: int, debug = 0):
 
     # Parse the instruction
     instruction.type = instr_type
+    try:
+        opcode = instr_map[split_instr[0]]
+    except KeyError:
+        print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid")
+        sys.exit(3)
     if instruction.type == INSTR_TYPE.REG:
         #parse reg
         instruction.set_reg(
-            opcode = instr_map[split_instr[0]],
+            opcode = opcode,
             rd = int(split_instr[1][1:]),
             rs1 = int(split_instr[2][1:]),
             rs2 = int(split_instr[3][1:])
@@ -101,7 +106,7 @@ def process_instr(instr: str, line: int, debug = 0):
             print(f"ERROR | line:{line} The immediate is out of range [-128,127]")
             sys.exit(3)
         instruction.set_store(
-            opcode = instr_map[split_instr[0]],
+            opcode = opcode,
             rd = int(split_instr[1][1:]),
             imm = immediate,
         )
@@ -112,16 +117,21 @@ def process_instr(instr: str, line: int, debug = 0):
             print(f"ERROR | line:{line} The immediate is out of range [-2048,2047]")
             sys.exit(3)
         instruction.set_imm(
-            opcode = instr_map[split_instr[0]],
+            opcode = opcode,
             imm = immediate,
         )
     elif instruction.type == INSTR_TYPE.TWOREG:
         #parse tworeg
+        try:
+            ex_code = ex_map[split_instr[0]]
+        except KeyError:
+            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid")
+            sys.exit(3)
         instruction.set_tworeg(
             opcode = 0b1111,
             rd = int(split_instr[1][1:]),
             rs1 = int(split_instr[2][1:]),
-            ex = ex_map[split_instr[0]],
+            ex = ex_code,
         )
 
     return instruction
