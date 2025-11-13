@@ -20,7 +20,7 @@ This should show you the options for calling the [RISC Assembler](risc_assembler
 ```
 python risc_assembler.py risc_asm.txt --debug
 ```
-This will output the assembled code in two forms. The binary machine code in `outbin.txt` and the hex machine code in `outhex.txt`.
+This will output the assembled code in two forms. The binary machine code in [outbin.txt](./Example/outbin.txt) and the hex machine code in [outhex.txt](./Example/outhex.txt).
 
 ***NOTE:*** **When using this script, double check the assembled program. This script was created in a day and may have bugs.**
 
@@ -32,6 +32,9 @@ python risc_assembler.py <risc_asm-file> [optional-flags]
 There are some optional flags you may also pass.
 - `--help`: Print the command options to the terminal
 - `--debug`: Provides debug prints to the console when you call the script. Tells you information such as how the script is interpreting each line.
+- `--no-underscore`: Turns off underscore spacers in the output files.
+- `--binf <bin-output>`: Changes the default `outbin.txt` to whatever is specified.
+- `--hexf <hex-output>`: Changes the default `outhex.txt` to whatever is specified.
 
 ## Instruction Convention
 There are 4 different types of instructions.
