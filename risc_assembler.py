@@ -159,7 +159,7 @@ def write_instr(p_instr: Instruction_t, writeable_file,
     if not hasattr(write_instr, "address"):
         write_instr.address = start_addr
     else:
-        write_instr.address += 0x4
+        write_instr.address += 0x2
 
     convert = dectobin
     if print_hex: convert = dectohex
