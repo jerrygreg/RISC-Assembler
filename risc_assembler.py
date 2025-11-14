@@ -148,9 +148,21 @@ def read_instr():
     #todo
     return "instr"
 
-def write_instr(p_instr: Instruction_t, writeable_file, hex = False, concat_str = "_"):
+def write_instr(p_instr: Instruction_t, writeable_file,
+                print_hex = False, concat_str = "_",
+                formatted = False, start_addr = 0x0):
+    assert(p_instr.type != INSTR_TYPE.NONE)
+    # To catch any instances where we get to the end without hitting any of the if/elif statements
+    write_str = "Some error occured when writing the instruction."
+
+    # Store address
+    if not hasattr(write_instr, "address"):
+        write_instr.address = start_addr
+    else:
+        write_instr.address += 0x4
+
     convert = dectobin
-    if hex: convert = dectohex
+    if print_hex: convert = dectohex
 
     opcode_bin = convert(p_instr.opcode,4)
     if p_instr.type == INSTR_TYPE.REG:
@@ -158,25 +170,39 @@ def write_instr(p_instr: Instruction_t, writeable_file, hex = False, concat_str 
         rd_bin = convert(p_instr.rd,4)
         rs1_bin = convert(p_instr.rs1,4)
         rs2_bin = convert(p_instr.rs2,4)
-        writeable_file.write(concat_str.join([opcode_bin, rd_bin, rs1_bin, rs2_bin]) + "\n")
+        write_str = concat_str.join([opcode_bin, rd_bin, rs1_bin, rs2_bin])
 
     elif p_instr.type == INSTR_TYPE.STORE:
         # write store
         rd_bin = convert(p_instr.rd,4)
         imm8_bin = convert(p_instr.imm8,8, signext = True)
-        writeable_file.write(concat_str.join([opcode_bin, rd_bin, imm8_bin]) + "\n")
+        write_str = concat_str.join([opcode_bin, rd_bin, imm8_bin])
 
     elif p_instr.type == INSTR_TYPE.IMM:
         # write imm
         imm12_bin = convert(p_instr.imm12, 12, signext = True)
-        writeable_file.write(concat_str.join([opcode_bin, imm12_bin]) + "\n")
+        write_str = concat_str.join([opcode_bin, imm12_bin])
 
     elif p_instr.type == INSTR_TYPE.TWOREG:
         # write tworeg
         rd_bin = convert(p_instr.rd, 4)
         rs1_bin = convert(p_instr.rs1, 4)
         ex_bin = convert(p_instr.ex, 4)
-        writeable_file.write(concat_str.join([opcode_bin, rd_bin, rs1_bin, ex_bin]) + "\n")
+        write_str = concat_str.join([opcode_bin, rd_bin, rs1_bin, ex_bin])
+
+    # Format string
+    if formatted:
+        if print_hex:
+            justify_len = 4
+            write_str = "x\"" + write_str
+        else:
+            justify_len = 16
+            write_str = "b\"" + write_str
+        write_str = ((write_str + "\",").ljust(2 + justify_len + 3*len(concat_str) + 2)
+                     + f" -- Address 0x{dectohex(write_instr.address, bits = 4*4)}")
+
+    writeable_file.write(write_str + "\n")
+    return write_str
 
 # Main function
 if __name__ == "__main__":
@@ -186,6 +212,7 @@ if __name__ == "__main__":
     # Add arguments
     parser.add_argument("file_path", type=str, help="The path to a text file with the risc assembly.")
     parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug prints.")
+    parser.add_argument("-F", "--formatted", action="store_true", help="Formats the print for direct copy-paste into the vhdl memory file.")
     parser.add_argument("-nu", "--no-underscore", action="store_true", help="Turns off the underscore spacers in output files.")
     parser.add_argument("-bf", "--binf", type=str, default="outbin.txt", help="Specifies the file to output the binary machine code to.")
     parser.add_argument("-hf", "--hexf", type=str, default="outhex.txt", help="Specifies the file to output the hex machine code to.")
@@ -195,8 +222,9 @@ if __name__ == "__main__":
     print(f"Running with arguments:",f"{args}"[9:])
     debug_on = args.debug
     file_path = args.file_path
+    formatted_flag = args.formatted
 
-    if (args.no_underscore):
+    if args.no_underscore:
         concat_str = ""
     else:
         concat_str = "_"
@@ -212,8 +240,10 @@ if __name__ == "__main__":
 
             # Write instruction
             if p_instr.type != INSTR_TYPE.NONE:
-                write_instr(p_instr, outfile_bin, False, concat_str = concat_str)
-                write_instr(p_instr, outfile_hex, True, concat_str = concat_str)
+                write_instr(p_instr, outfile_bin, False,
+                            concat_str = concat_str, formatted = formatted_flag)
+                write_instr(p_instr, outfile_hex, True,
+                            concat_str = concat_str, formatted = formatted_flag)
             # else:
             #     outfile_bin.write("nothing\n")
             #     outfile_hex.write("nothing\n")

@@ -1,6 +1,6 @@
-a_f_9c
-0_2_08
-c_1_2_0
-e_1_1_2
-f_1_2_8
-b_aaa
+x"a_f_9c",  -- Address 0x0004
+x"0_2_08",  -- Address 0x000c
+x"c_1_2_0", -- Address 0x0014
+x"e_1_1_2", -- Address 0x001c
+x"f_1_2_8", -- Address 0x0024
+x"b_aaa",   -- Address 0x002c

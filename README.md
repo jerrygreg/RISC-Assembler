@@ -18,7 +18,7 @@ python risc_assembler.py --help
 ```
 This should show you the options for calling the [RISC Assembler](risc_assembler.py) script. If you'd like to actually use it to assemble some RISC assembly, you can call something like the following.
 ```
-python risc_assembler.py risc_asm.txt --debug
+python risc_assembler.py risc_asm.txt --debug --formatted
 ```
 This will output the assembled code in two forms. The binary machine code in [outbin.txt](./Example/outbin.txt) and the hex machine code in [outhex.txt](./Example/outhex.txt).
 
@@ -32,6 +32,7 @@ python risc_assembler.py <risc_asm-file> [optional-flags]
 There are some optional flags you may also pass.
 - `--help`: Print the command options to the terminal
 - `--debug`: Provides debug prints to the console when you call the script. Tells you information such as how the script is interpreting each line.
+- `--formatted`: Prints the binary and hex files with vhdl formatting.
 - `--no-underscore`: Turns off underscore spacers in the output files.
 - `--binf <bin-output>`: Changes the default `outbin.txt` to whatever is specified.
 - `--hexf <hex-output>`: Changes the default `outhex.txt` to whatever is specified.
