@@ -1,7 +1,7 @@
 lui r15, -100 #Negative immediate!
 li r2, 0b1000 #Binary immediate!
 add r1, r2, r0
-nah r1, r1, r1
+# nah r1, r1, r1
 # Comment! ^^Blank space!!!
 or r1, r1, r2
 neg r1, r2
