@@ -67,7 +67,7 @@ def strip_instr(instr: str, line: int, debug = 0):
         if debug: print(f"info  | line:{line} is a 2reg instruction")
         instr_type = INSTR_TYPE.TWOREG
     elif re.fullmatch(label_pattern, instr):
-        print(f"ERROR | line:{line} Labels are NOT supported")
+        print(f"ERROR | line:{line} Labels are NOT supported.")
         sys.exit(2)
     else:
         print(f"ERROR | line:{line} This line does not match the pattern of any other instructions")
@@ -96,7 +96,8 @@ def process_instr(instr: str, line: int, debug = 0):
             else:
                 opcode = instr_map[split_instr[0]]
         except KeyError:
-            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid")
+            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}' instruction.")
+            print(f"      | You may have provided the wrong arguments.")
             sys.exit(3)
 
     if instruction.type == INSTR_TYPE.REG:
@@ -133,7 +134,8 @@ def process_instr(instr: str, line: int, debug = 0):
         try:
             ex_code = ex_map[split_instr[0]]
         except KeyError:
-            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid")
+            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}' instruction.")
+            print(f"      | You may have provided the wrong arguments.")
             sys.exit(3)
         instruction.set_tworeg(
             opcode = opcode,
