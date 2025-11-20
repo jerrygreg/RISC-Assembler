@@ -1,4 +1,4 @@
-'Example/outhex.txt' assembled at '2025-11-19 21:59:08.874748'
+'Example/example.txt' assembled at '2025-11-19 22:02:19.727500' with arguments (file_path='Example/example.txt', debug=True, formatted=True, no_underscore=False, binf='Example/outbin.txt', hexf='Example/outhex.txt')
 x"a_f_9c",  -- Address 0x0000
 x"0_2_08",  -- Address 0x0002
 x"c_1_2_0", -- Address 0x0004

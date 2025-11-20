@@ -238,8 +238,8 @@ if __name__ == "__main__":
     outfile_hex = open(args.hexf, "w")
 
     # Headers
-    outfile_hex.write(f"'{args.hexf}' assembled at '{datetime.datetime.now()}'\n")
-    outfile_bin.write(f"'{args.binf}' assembled at '{datetime.datetime.now()}'\n")
+    outfile_hex.write(f"'{file_path}' assembled at '{datetime.datetime.now()}' with arguments " + f"{args}"[9:] + "\n")
+    outfile_bin.write(f"'{file_path}' assembled at '{datetime.datetime.now()}' with arguments " + f"{args}"[9:] + "\n")
 
     with open(file_path, "r") as infile:
         line_num: int = 1
