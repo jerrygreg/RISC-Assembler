@@ -1,6 +1,7 @@
-x"a_f_9c",  -- Address 0x0004
-x"0_2_08",  -- Address 0x000c
-x"c_1_2_0", -- Address 0x0014
-x"e_1_1_2", -- Address 0x001c
-x"f_1_2_8", -- Address 0x0024
-x"b_aaa",   -- Address 0x002c
+'Example/outhex.txt' assembled at '2025-11-19 21:59:08.874748'
+x"a_f_9c",  -- Address 0x0000
+x"0_2_08",  -- Address 0x0002
+x"c_1_2_0", -- Address 0x0004
+x"e_1_1_2", -- Address 0x0006
+x"f_1_2_8", -- Address 0x0008
+x"b_aaa",   -- Address 0x000a

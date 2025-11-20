@@ -4,6 +4,7 @@ from header import *
 import sys
 import argparse
 import re
+import datetime
 
 def print_usage():
     print("usage: risc_compiler.py <risc_assembly.txt> [options]")
@@ -144,10 +145,6 @@ def process_instr(instr: str, line: int, debug = 0):
     return instruction
 #END Process_instr
 
-def read_instr():
-    #todo
-    return "instr"
-
 def write_instr(p_instr: Instruction_t, writeable_file,
                 print_hex = False, concat_str = "_",
                 formatted = False, start_addr = 0x0):
@@ -156,10 +153,18 @@ def write_instr(p_instr: Instruction_t, writeable_file,
     write_str = "Some error occured when writing the instruction."
 
     # Store address
-    if not hasattr(write_instr, "address"):
-        write_instr.address = start_addr
+    if print_hex:
+        if not hasattr(write_instr, "address_hex"):
+            write_instr.address_hex = start_addr
+        else:
+            write_instr.address_hex += 0x2
+        address = write_instr.address_hex
     else:
-        write_instr.address += 0x2
+        if not hasattr(write_instr, "address_hex"):
+            write_instr.address_bin = start_addr
+        else:
+            write_instr.address_bin += 0x2
+        address = write_instr.address_bin
 
     convert = dectobin
     if print_hex: convert = dectohex
@@ -199,7 +204,7 @@ def write_instr(p_instr: Instruction_t, writeable_file,
             justify_len = 16
             write_str = "b\"" + write_str
         write_str = ((write_str + "\",").ljust(2 + justify_len + 3*len(concat_str) + 2)
-                     + f" -- Address 0x{dectohex(write_instr.address, bits = 4*4)}")
+                     + f" -- Address 0x{dectohex(address, bits = 4*4)}")
 
     writeable_file.write(write_str + "\n")
     return write_str
@@ -231,6 +236,10 @@ if __name__ == "__main__":
 
     outfile_bin = open(args.binf, "w")
     outfile_hex = open(args.hexf, "w")
+
+    # Headers
+    outfile_hex.write(f"'{args.hexf}' assembled at '{datetime.datetime.now()}'\n")
+    outfile_bin.write(f"'{args.binf}' assembled at '{datetime.datetime.now()}'\n")
 
     with open(file_path, "r") as infile:
         line_num: int = 1
