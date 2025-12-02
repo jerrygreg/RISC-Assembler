@@ -1,7 +1,7 @@
-'Example/example.txt' assembled at '2025-11-19 22:02:19.727510' with arguments (file_path='Example/example.txt', debug=True, formatted=True, no_underscore=False, binf='Example/outbin.txt', hexf='Example/outhex.txt')
-b"1010_1111_10011100",  -- Address 0x0000
-b"0000_0010_00001000",  -- Address 0x0002
-b"1100_0001_0010_0000", -- Address 0x0004
-b"1110_0001_0001_0010", -- Address 0x0006
-b"1111_0001_0010_1000", -- Address 0x0008
-b"1011_101010101010",   -- Address 0x000a
+'Example/example.txt' assembled at '2025-12-02 13:54:36.326404' with arguments (file_path='Example/example.txt', debug=True, formatted=True, no_underscore=False, binf='Example/outbin.txt', hexf='Example/outhex.txt')
+b"1010_1111_10011100",  -- Address 0x0000 (lui r15, -100 #Negative immediate!)
+b"0000_0010_00001000",  -- Address 0x0002 (li r2, 0b1000 #Binary immediate!)
+b"1100_0001_0010_0000", -- Address 0x0004 (    add r1, r2, r0)
+b"1110_0001_0001_0010", -- Address 0x0006 (    or r1, r1, r2)
+b"1111_0001_0010_1000", -- Address 0x0008 (neg r1, r2)
+b"1011_101010101010",   -- Address 0x000a (BRA 0xAaA #HEX!)

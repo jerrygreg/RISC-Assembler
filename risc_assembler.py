@@ -36,7 +36,7 @@ def dectobin(imm: int, bits: int, signext: bool = False):
         imm += 2**bits
     return bin(imm)[2:].zfill(bits)
 
-def strip_instr(instr: str, line: int, debug = 0):
+def strip_instr(instr: str, line: int, debug: bool = False) -> tuple[list[str], INSTR_TYPE]:
     # Parse string
     instr = instr.lower()
     if instr.count("#") != 0:
@@ -149,7 +149,8 @@ def process_instr(instr: str, line: int, debug = 0):
 
 def write_instr(p_instr: Instruction_t, writeable_file,
                 print_hex = False, concat_str = "_",
-                formatted = False, start_addr = 0x0):
+                formatted = False, start_addr = 0x0,
+                push_back: str = ""):
     assert(p_instr.type != INSTR_TYPE.NONE)
     # To catch any instances where we get to the end without hitting any of the if/elif statements
     write_str = "Some error occured when writing the instruction."
@@ -206,7 +207,7 @@ def write_instr(p_instr: Instruction_t, writeable_file,
             justify_len = 16
             write_str = "b\"" + write_str
         write_str = ((write_str + "\",").ljust(2 + justify_len + 3*len(concat_str) + 2)
-                     + f" -- Address 0x{dectohex(address, bits = 4*4)}")
+                     + f" -- Address 0x{dectohex(address, bits = 4*4)} ({push_back})")
 
     writeable_file.write(write_str + "\n")
     return write_str
@@ -252,9 +253,11 @@ if __name__ == "__main__":
             # Write instruction
             if p_instr.type != INSTR_TYPE.NONE:
                 write_instr(p_instr, outfile_bin, False,
-                            concat_str = concat_str, formatted = formatted_flag)
+                            concat_str = concat_str, formatted = formatted_flag,
+                            push_back = instr.rstrip())
                 write_instr(p_instr, outfile_hex, True,
-                            concat_str = concat_str, formatted = formatted_flag)
+                            concat_str = concat_str, formatted = formatted_flag,
+                            push_back = instr.rstrip())
             # else:
             #     outfile_bin.write("nothing\n")
             #     outfile_hex.write("nothing\n")
