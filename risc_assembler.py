@@ -10,8 +10,10 @@ def print_usage():
     print("usage: risc_compiler.py <risc_assembly.txt> [options]")
     print("--debug :Used to turn on debug prints.")
 
-def parse_imm(imm: str, bits: int) -> int:
-    if imm[0:2] == "0x":
+def parse_imm(imm: str, bits: int) -> int | str:
+    if re.fullmatch(instr_label_pattern, imm):
+        return imm
+    elif imm[0:2] == "0x":
         immediate = int(imm[2:], 16)
         if (len(imm) == 2 + int(bits/4)) and bool(re.fullmatch(r"(8|[a-f])",imm[2])):
             immediate -= 2**bits
@@ -67,25 +69,24 @@ def strip_instr(instr: str, line: int, debug: bool = False) -> tuple[list[str], 
         if debug: print(f"info  | line:{line} is a 2reg instruction")
         instr_type = INSTR_TYPE.TWOREG
     elif re.fullmatch(label_pattern, instr):
-        print(f"ERROR | line:{line} Labels are NOT supported.")
-        sys.exit(2)
+        if debug: print(f"info  | line:{line} is a label")
+        instr_type = INSTR_TYPE.LABEL
     else:
         print(f"ERROR | line:{line} This line does not match the pattern of any other instructions")
         sys.exit(2)
 
-    split_instr = [var.strip(",").strip() for var in split_instr]
+    split_instr = [var.strip(",").strip(":").strip() for var in split_instr]
 
     return split_instr, instr_type
 #END strip_instr
 
 
-def process_instr(instr: str, line: int, debug = 0):
+def process_instr(instr: str, line: int, debug = False) -> Instruction_t:
     # Init
     instruction: Instruction_t = Instruction_t()
 
     split_instr, instr_type = strip_instr(instr, line, debug = debug)
 
-    # Parse the instruction
     instruction.type = instr_type
 
     # Find opcode if need be
@@ -93,81 +94,83 @@ def process_instr(instr: str, line: int, debug = 0):
         try:
             if instruction.type == INSTR_TYPE.TWOREG:
                 opcode = 0b1111
-            else:
+            elif instruction.type != INSTR_TYPE.LABEL:
                 opcode = instr_map[split_instr[0]]
+            else:
+                opcode = 0b0000 # shouldn't be reachable
         except KeyError:
             print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}' instruction.")
             print(f"      | You may have provided the wrong arguments.")
             sys.exit(3)
 
-    if instruction.type == INSTR_TYPE.REG:
-        #parse reg
-        instruction.set_reg(
-            opcode = opcode,
-            rd = int(split_instr[1][1:]),
-            rs1 = int(split_instr[2][1:]),
-            rs2 = int(split_instr[3][1:])
-        )
-    elif instruction.type == INSTR_TYPE.STORE:
-        #parse store
-        immediate = parse_imm(split_instr[2][:], 8)
-        if not(-128 <= immediate <= 127):
-            print(f"ERROR | line:{line} The immediate is out of range [-128,127]")
-            sys.exit(3)
-        instruction.set_store(
-            opcode = opcode,
-            rd = int(split_instr[1][1:]),
-            imm = immediate,
-        )
-    elif instruction.type == INSTR_TYPE.IMM:
-        #parse imm
-        immediate = parse_imm(split_instr[1][:], 12)
-        if not(-2048 <= immediate <= 2047):
-            print(f"ERROR | line:{line} The immediate is out of range [-2048,2047]")
-            sys.exit(3)
-        instruction.set_imm(
-            opcode = opcode,
-            imm = immediate,
-        )
-    elif instruction.type == INSTR_TYPE.TWOREG:
-        #parse tworeg
-        try:
-            ex_code = ex_map[split_instr[0]]
-        except KeyError:
-            print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}' instruction.")
-            print(f"      | You may have provided the wrong arguments.")
-            sys.exit(3)
-        instruction.set_tworeg(
-            opcode = opcode,
-            rd = int(split_instr[1][1:]),
-            rs1 = int(split_instr[2][1:]),
-            ex = ex_code,
-        )
+        if instruction.type == INSTR_TYPE.REG:
+            #parse reg
+            instruction.set_reg(
+                opcode = opcode,
+                rd = int(split_instr[1][1:]),
+                rs1 = int(split_instr[2][1:]),
+                rs2 = int(split_instr[3][1:])
+            )
+        elif instruction.type == INSTR_TYPE.STORE:
+            #parse store
+            immediate = parse_imm(split_instr[2][:], 8)
+            assert(type(immediate) == int)
+            if not(-128 <= immediate <= 127):
+                print(f"ERROR | line:{line} The immediate is out of range [-128,127]")
+                sys.exit(3)
+            instruction.set_store(
+                opcode = opcode,
+                rd = int(split_instr[1][1:]),
+                imm = immediate,
+            )
+        elif instruction.type == INSTR_TYPE.IMM:
+            #parse imm
+            immediate = parse_imm(split_instr[1][:], 12)
+            if type(immediate) == int:
+                if not(-2048 <= immediate <= 2047):
+                    print(f"ERROR | line:{line} The immediate is out of range [-2048,2047]")
+                    sys.exit(3)
+
+            instruction.set_imm(
+                opcode = opcode,
+                imm = immediate,
+            )
+        elif instruction.type == INSTR_TYPE.TWOREG:
+            #parse tworeg
+            try:
+                ex_code = ex_map[split_instr[0]]
+            except KeyError:
+                print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}' instruction.")
+                print(f"      | You may have provided the wrong arguments.")
+                sys.exit(3)
+            instruction.set_tworeg(
+                opcode = opcode,
+                rd = int(split_instr[1][1:]),
+                rs1 = int(split_instr[2][1:]),
+                ex = ex_code,
+            )
+        elif instruction.type == INSTR_TYPE.LABEL:
+            try:
+                label = split_instr[0]
+            except KeyError:
+                print(f"ERROR | line:{line} This instruction '{split_instr[0]}' is not valid as a '{instruction.type}'.")
+                print(f"      | You may have provided the wrong arguments.")
+                sys.exit(3)
+            instruction.set_label(
+                label = label,
+            )
 
     return instruction
 #END Process_instr
 
-def write_instr(p_instr: Instruction_t, writeable_file,
+def write_instr(p_instr: Instruction_t, label_table: dict[str, tuple[int, int]], 
+                writeable_file, line: int,
                 print_hex = False, concat_str = "_",
-                formatted = False, start_addr = 0x0,
+                formatted = False, address = 0x0,
                 push_back: str = ""):
     assert(p_instr.type != INSTR_TYPE.NONE)
     # To catch any instances where we get to the end without hitting any of the if/elif statements
     write_str = "Some error occured when writing the instruction."
-
-    # Store address
-    if print_hex:
-        if not hasattr(write_instr, "address_hex"):
-            write_instr.address_hex = start_addr
-        else:
-            write_instr.address_hex += 0x2
-        address = write_instr.address_hex
-    else:
-        if not hasattr(write_instr, "address_hex"):
-            write_instr.address_bin = start_addr
-        else:
-            write_instr.address_bin += 0x2
-        address = write_instr.address_bin
 
     convert = dectobin
     if print_hex: convert = dectohex
@@ -188,6 +191,18 @@ def write_instr(p_instr: Instruction_t, writeable_file,
 
     elif p_instr.type == INSTR_TYPE.IMM:
         # write imm
+        if type(p_instr.imm12) == str:
+            if p_instr.imm12 in label_table.keys():
+                p_instr.imm12 = label_table[p_instr.imm12][1] - addr
+                if not(-2048 <= p_instr.imm12 <= 2047):
+                    print(f"ERROR | line:{line} The immediate is out of range [-2048,2047]")
+                    sys.exit(3)
+            else:
+                print(f"ERROR | line:{line} The label '{p_instr.imm12}' does not exist as a label.")
+                sys.exit(4)
+            
+        assert(type(p_instr.imm12) == int)
+        
         imm12_bin = convert(p_instr.imm12, 12, signext = True)
         write_str = concat_str.join([opcode_bin, imm12_bin])
 
@@ -244,25 +259,53 @@ if __name__ == "__main__":
     outfile_hex.write(f"'{file_path}' assembled at '{datetime.datetime.now()}' with arguments " + f"{args}"[9:] + "\n")
     outfile_bin.write(f"'{file_path}' assembled at '{datetime.datetime.now()}' with arguments " + f"{args}"[9:] + "\n")
 
+    # stored as {label, (line, addr)}
+    label_table: dict[str, tuple[int,int]] = {}
+    # stored as {line_num, instr, addr, original}
+    instr_table: list[tuple[int, Instruction_t,int,str]] = []
+
+    addr = 0x0
     with open(file_path, "r") as infile:
         line_num: int = 1
         for instr in infile:
             # Process instruction
-            p_instr: Instruction_t = process_instr(instr, line_num, debug=debug_on)
-
-            # Write instruction
-            if p_instr.type != INSTR_TYPE.NONE:
-                write_instr(p_instr, outfile_bin, False,
-                            concat_str = concat_str, formatted = formatted_flag,
-                            push_back = instr.rstrip())
-                write_instr(p_instr, outfile_hex, True,
-                            concat_str = concat_str, formatted = formatted_flag,
-                            push_back = instr.rstrip())
-            # else:
-            #     outfile_bin.write("nothing\n")
-            #     outfile_hex.write("nothing\n")
+            p_instr = process_instr(instr, line_num, debug=debug_on)
+            if p_instr.type == INSTR_TYPE.LABEL:
+                if p_instr.label in label_table.keys():
+                    raise ValueError(f"ERROR | line:{line_num} you may have a duplicate label. {p_instr.label} at line {line_num} and {label_table[p_instr.label][0]}")
+                else:
+                    label_table[p_instr.label] = (line_num, addr)
+            elif p_instr.type != INSTR_TYPE.NONE:
+                instr_table.append((line_num, p_instr, addr, instr))
+                addr += addr_increment
 
             line_num += 1
+
+    instr_table.sort(key = lambda x : x[2])
+    if debug_on:
+        print("INFO  | LABEL TABLE")
+        print("{")
+        for key,value in label_table.items():
+            print(f"{key}: line: {value[0]}, addr: {value[1]}")
+        print("}")
+        print("INFO  | INSTRUCTION TABLE")
+        print("[")
+        for entry in instr_table:
+            print(f"line: {entry[0]}, {entry[1]}, addr: {entry[2]}, text: {entry[3].strip("\n")}")
+        print("]")
+            
+        print()
+
+    # Write instruction
+    for line, p_instr, addr, instr in instr_table:
+        if (p_instr.type != INSTR_TYPE.NONE) and (p_instr.type != INSTR_TYPE.LABEL):
+            write_instr(p_instr, label_table, outfile_bin, line, print_hex = False, address = addr,
+                        concat_str = concat_str, formatted = formatted_flag,
+                        push_back = instr.rstrip())
+            write_instr(p_instr, label_table, outfile_hex, line, print_hex = True, address = addr,
+                        concat_str = concat_str, formatted = formatted_flag,
+                        push_back = instr.rstrip())
+            
 
     outfile_bin.close()
     outfile_hex.close()
