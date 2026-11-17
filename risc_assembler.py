@@ -281,21 +281,6 @@ if __name__ == "__main__":
 
             line_num += 1
 
-    instr_table.sort(key = lambda x : x[2])
-    if debug_on:
-        print("INFO  | LABEL TABLE")
-        print("{")
-        for key,value in label_table.items():
-            print(f"{key}: line: {value[0]}, addr: {value[1]}")
-        print("}")
-        print("INFO  | INSTRUCTION TABLE")
-        print("[")
-        for entry in instr_table:
-            print(f"line: {entry[0]}, {entry[1]}, addr: {entry[2]}, text: {entry[3].strip("\n")}")
-        print("]")
-            
-        print()
-
     # Write instruction
     for line, p_instr, addr, instr in instr_table:
         if (p_instr.type != INSTR_TYPE.NONE) and (p_instr.type != INSTR_TYPE.LABEL):
@@ -305,7 +290,20 @@ if __name__ == "__main__":
             write_instr(p_instr, label_table, outfile_hex, line, print_hex = True, address = addr,
                         concat_str = concat_str, formatted = formatted_flag,
                         push_back = instr.rstrip())
-            
+
+    instr_table.sort(key = lambda x : x[2])
+    if debug_on:
+        print("INFO  | LABEL TABLE")
+        print("{")
+        for key,value in label_table.items():
+            print(f"{(key + ":"):14} line: {value[0]:3d}, addr: {hex(value[1]):>5}")
+        print("}")
+        print("INFO  | INSTRUCTION TABLE")
+        print("[")
+        for entry in instr_table:
+            print(f"line: {entry[0]:3d}, {entry[1]}, addr: {hex(entry[2]):>5}, text: {entry[3].strip("\n")}")
+        print("]")
+        print()
 
     outfile_bin.close()
     outfile_hex.close()

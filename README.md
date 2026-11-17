@@ -1,5 +1,5 @@
 # RISC-Assembler
-This is a small python script to compile the RISC (Reduced Instruction Set Computer) architecture assembly for the Johns Hopkins University's Advanced Digital Systems final project. This assembler is accurate atleast upto Fall 2025.
+This is a small python script to compile the RISC (Reduced Instruction Set Computer) architecture assembly for the Johns Hopkins University's Advanced Digital Systems final project. This assembler is accurate atleast upto Fall 2026.
 
 The architecture and associated assembly is detailed in the [RISC Specifications](cpu.pdf). 
 
@@ -18,7 +18,7 @@ python risc_assembler.py --help
 ```
 This should show you the options for calling the [RISC Assembler](risc_assembler.py) script. If you'd like to actually use it to assemble some RISC assembly, you can call something like the following.
 ```
-python risc_assembler.py risc_asm.txt --debug --formatted
+python risc_assembler.py risc_asm.txt --debug
 ```
 This will output the assembled code in two forms. The binary machine code in [outbin.txt](./Example/outbin.txt) and the hex machine code in [outhex.txt](./Example/outhex.txt).
 
@@ -71,7 +71,7 @@ Immediates can be negative.
 You can add comments anywhere by using a `#`. This will comment out the rest of the line and the assembler will ignore it.
 
 ## Labels
-Labels are not supported by this assembler.
+Labels are written on their own lines as `<label_name>:` and used in branch instruction that take an immediate (At the moment the only one is `bra`). In the branch instruction they are used without the colon. For example `bra crazy_label`
 
 ## Contact
 Send me an email if you have questions. jgrego28@jh.edu

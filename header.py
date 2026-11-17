@@ -74,7 +74,8 @@ format_map: dict = {
 
 register_pattern = r"r\d[0-5]?"
 instruction_pattern = r"^\s*[a-z]{2,4}"
-label_pattern = r"^\s*[a-zA-Z_]*:\s*"
+instr_label_pattern = r"[a-zA-Z_][a-zA-Z0-9_]*"
+label_pattern = r"^\s*" + instr_label_pattern + r":\s*"
 #instr rd, rs1, rs2
 reg_instr_pattern = (instruction_pattern + r"\s*" +
                      register_pattern + r",\s*" +
@@ -85,9 +86,8 @@ store_pattern = (instruction_pattern + r"\s*" +
                  register_pattern + r",\s*" +
                  r"((0b[0-1]{1,8})|(0x[0-9a-f]{1,2})|(-?[0-9]{1,3}))" + r"\s*")
 #instr imm|label
-instr_label_pattern = r"[a-zA-Z_]*"
 imm_pattern = (instruction_pattern + r"\s*" +
-                 r"(([a-zA-Z_]*)|(0b[0-1]{1,12})|(0x[0-9a-f]{1,3})|(-?[0-9]{1,4}))" + r"\s*")
+                 r"((" + instr_label_pattern + r")|(0b[0-1]{1,12})|(0x[0-9a-f]{1,3})|(-?[0-9]{1,4}))" + r"\s*")
 #instr rd, rs1
 tworeg_pattern = (instruction_pattern + r"\s*" +
                   register_pattern + r",\s*" +
@@ -108,7 +108,13 @@ class Instruction_t():
         self.rd: int = -1
 
     def __str__(self):
-        return f"type: {self.type}, opcode: {self.opcode}, ex: {self.ex}, imm8: {self.imm8}, imm12: {self.imm12}, rs1: {self.rs1}, rs2: {self.rs2}, rd: {self.rd}"
+        ex_str = f"{self.ex:2d}" if self.ex != -1 else " "*2
+        imm8_str = f"{self.imm8:4d}" if self.imm8 != -1 else " "*4
+        imm12_str = f"{self.imm12:5d}" if self.imm12 != -1 else " "*5
+        rs1_str = f"{self.rs1:2d}" if self.rs1 != -1 else " "*2
+        rs2_str = f"{self.rs2:2d}" if self.rs2 != -1 else " "*2
+        rd_str = f"{self.rd:2d}" if self.rd != -1 else " "*2
+        return f"type: {self.type:17}, opcode: {hex(self.opcode):3}, ex: {ex_str}, imm8: {imm8_str}, imm12: {imm12_str}, rd: {rd_str}, rs1: {rs1_str}, rs2: {rs2_str}"
 
     def set_reg(self, opcode, rd, rs1, rs2):
         #todo: add checks
